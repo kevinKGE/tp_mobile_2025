@@ -7,13 +7,14 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RootStackParamList } from '../App';
 import { useSelector } from 'react-redux';
 import { RootState } from '../store';
-import { Button, Text } from "@react-native-material/core";
+import { Text, Button } from "@react-native-material/core";
 
 type HomeScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Home'>;
 
 const HomeScreen: React.FC = () => {
     const [annonces, setAnnonces] = useState<Annonce[]>([]);
     const [searchQuery, setSearchQuery] = useState<string>('');
+    const [sortOrder, setSortOrder] = useState<'none' | 'asc' | 'desc'>('none');
 
     const navigation = useNavigation<HomeScreenNavigationProp>();
 
@@ -37,11 +38,25 @@ const HomeScreen: React.FC = () => {
         navigation.navigate('Details', { annonce });
     };
 
-    const filteredAnnonces = annonces.filter(annonce =>
-        annonce.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        annonce.constructor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        annonce.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const toggleSortOrder = () => {
+        setSortOrder(prevOrder => {
+            if (prevOrder === 'none') return 'asc';
+            if (prevOrder === 'asc') return 'desc';
+            return 'none';
+        });
+    };
+
+    const filteredAnnonces = annonces
+        .filter(annonce =>
+            annonce.model.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            annonce.constructor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            annonce.description.toLowerCase().includes(searchQuery.toLowerCase())
+        )
+        .sort((a, b) => {
+            if (sortOrder === 'none') return 0;
+            const orderMultiplier = sortOrder === 'asc' ? 1 : -1;
+            return a.model.localeCompare(b.model) * orderMultiplier;
+        });
 
     return (
         <View style={styles.container}>
@@ -55,6 +70,10 @@ const HomeScreen: React.FC = () => {
                 value={searchQuery}
                 onChangeText={setSearchQuery}
             />
+            <Button
+                title={`Trier par modèle (${sortOrder})`}
+                onPress={toggleSortOrder}
+            />
             <Text style={styles.annonceCount}>Nombre d'annonces: {filteredAnnonces.length}</Text>
             <AnnonceList annonces={filteredAnnonces} onPressAnnonce={handlePressAnnonce} />
         </View>
@@ -67,12 +86,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         paddingTop: 40,
         paddingHorizontal: 10,
-    },
-    header: {
-        fontSize: 24,
-        fontWeight: 'bold',
-        marginBottom: 10,
-        textAlign: 'center',
     },
     searchInput: {
         height: 40,

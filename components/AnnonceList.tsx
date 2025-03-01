@@ -17,7 +17,7 @@ const AnnonceList: React.FC<AnnonceListProps> = ({ annonces, onPressAnnonce }) =
           <View>
             <View style={styles.infoContainer}>
               <Text style={styles.model}>{item.model}</Text>
-              <Text style={styles.releaseDate}>{item.releaseDate}, ${item.price}</Text>
+              <Text style={styles.releaseDate}>{item.releaseDate}, {item.price}€</Text>
               <Text style={styles.description}>{item.description}</Text>
             </View>
           </View>
